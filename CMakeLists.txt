@@ -16,6 +16,11 @@ add_subdirectory(libs/glm)
 # Find pre-installed Vulkan binary
 find_package(vulkan REQUIRED)
 
+# Include shaders
+file(GLOB SHADERS "shaders/*.spv")
+file(COPY ${SHADERS} DESTINATION "shaders/")
+
+
 # Build and link app
 add_executable(vulkan_base main.cpp)
 target_link_libraries(vulkan_base glfw glm Vulkan::Vulkan)

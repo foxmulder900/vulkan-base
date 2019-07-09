@@ -239,7 +239,7 @@ private:
 
         bool swapChainAdequate = false;
         if (extensionsSupported) {
-            SwapChainSupportDetails swapChainSupport = swapChain.querySwapChainSupport(&availableDevice, &surface);
+            SwapChainSupportDetails swapChainSupport = swapChain.querySwapChainSupport(availableDevice, surface);
             swapChainAdequate = !swapChainSupport.formats.empty() && !swapChainSupport.presentModes.empty();
         }
 
@@ -342,11 +342,11 @@ private:
     }
 
     void initSwapChain(){
-        swapChain.init(&physicalDevice, &device, &surface, WIDTH, HEIGHT, queueFamilyIndices);
+        swapChain.init(physicalDevice, device, surface, WIDTH, HEIGHT, queueFamilyIndices);
     }
 
     void initFrameBuffer(){
-        frameBuffer.init(&device, &swapChain, &renderPass);
+        frameBuffer.init(device, swapChain, renderPass);
     }
 
     void createGraphicsPipeline(){
@@ -587,7 +587,7 @@ private:
             VkRenderPassBeginInfo renderPassInfo = {};
             renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
             renderPassInfo.renderPass = renderPass;
-            renderPassInfo.framebuffer = *frameBuffer.getBuffer(i);
+            renderPassInfo.framebuffer = frameBuffer.getBuffer(i);
             renderPassInfo.renderArea.offset = {0, 0};
             renderPassInfo.renderArea.extent = swapChain.getExtent();
 
@@ -611,7 +611,7 @@ private:
         vkResetFences(device, 1, &inFlightFences[currentFrame]);
 
         uint32_t imageIndex;
-        vkAcquireNextImageKHR(device, *swapChain.getSwapChain(), std::numeric_limits<uint64_t>::max(), imageAvailableSemaphores[currentFrame], VK_NULL_HANDLE, &imageIndex);
+        vkAcquireNextImageKHR(device, swapChain.getSwapChain(), std::numeric_limits<uint64_t>::max(), imageAvailableSemaphores[currentFrame], VK_NULL_HANDLE, &imageIndex);
 
         VkSubmitInfo submitInfo = {};
         submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -637,7 +637,7 @@ private:
         presentInfo.waitSemaphoreCount = 1;
         presentInfo.pWaitSemaphores = signalSemaphores;
 
-        VkSwapchainKHR swapChains[] = {*swapChain.getSwapChain()};
+        VkSwapchainKHR swapChains[] = {swapChain.getSwapChain()};
         presentInfo.swapchainCount = 1;
         presentInfo.pSwapchains = swapChains;
         presentInfo.pImageIndices = &imageIndex;
@@ -714,8 +714,8 @@ private:
         if (enableValidationLayers) {
             DestroyDebugUtilsMessengerEXT(instance, debugMessenger, nullptr);
         }
-        frameBuffer.cleanup(&device);
-        swapChain.cleanup(&device);
+        frameBuffer.cleanup(device);
+        swapChain.cleanup(device);
 
         for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
             vkDestroySemaphore(device, renderFinishedSemaphores[i], nullptr);
@@ -726,7 +726,7 @@ private:
         vkDestroyPipeline(device, graphicsPipeline, nullptr);
         vkDestroyPipelineLayout(device, pipelineLayout, nullptr);
         vkDestroyRenderPass(device, renderPass, nullptr);
-        vkDestroySwapchainKHR(device, *swapChain.getSwapChain(), nullptr);
+        vkDestroySwapchainKHR(device, swapChain.getSwapChain(), nullptr);
         vkDestroyDevice(device, nullptr);
         vkDestroySurfaceKHR(instance, surface, nullptr);
         vkDestroyInstance(instance, nullptr);

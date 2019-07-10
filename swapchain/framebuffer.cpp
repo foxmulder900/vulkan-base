@@ -11,6 +11,7 @@ class FrameBuffer{
 
 public:
     void init(VkDevice& device, SwapChain& swapChain, VkRenderPass& renderPass){
+        std::cout << "Initializing frame buffer..." << std::endl;
         int imageCount = swapChain.getSize();
         frameBuffers.resize(imageCount);
         for (int i = 0; i < imageCount; i++) {

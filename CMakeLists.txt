@@ -19,10 +19,13 @@ find_package(vulkan REQUIRED)
 # Include source
 include_directories(device)
 include_directories(swapchain)
+include_directories(pipeline)
+include_directories(utils)
+include_directories(queues)
 
 # Include shaders
-file(GLOB SHADERS "shaders/*.spv")
-file(COPY ${SHADERS} DESTINATION "shaders/")
+file(GLOB SHADERS "pipeline/shaders/*.spv")
+file(COPY ${SHADERS} DESTINATION "pipeline/shaders/")
 
 
 # Build and link app

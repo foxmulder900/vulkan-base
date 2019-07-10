@@ -20,6 +20,7 @@
 
     public:
         void init(VkPhysicalDevice& physicalDevice, VkDevice& device, VkSurfaceKHR& surface, uint32_t desired_width, uint32_t desired_height, QueueFamilyIndices queueFamilyIndices) {
+            std::cout << "Initializing swap chain..." << std::endl;
             SwapChainSupportDetails swapChainSupport = querySwapChainSupport(physicalDevice, surface);
 
             chooseSwapSurfaceFormat(swapChainSupport.formats);
@@ -37,11 +38,11 @@
             createImageViews(device, surfaceFormat.format);
         }
 
-        VkExtent2D getExtent(){
+        VkExtent2D& getExtent(){
             return extent;
         }
 
-        VkFormat getImageFormat(){
+        VkFormat& getImageFormat(){
             return surfaceFormat.format;
         }
 
@@ -79,10 +80,17 @@
             return details;
         }
 
+        uint32_t acquireNewImage(VkDevice& device, VkSemaphore signalSemaphore){
+            uint32_t imageIndex;
+            vkAcquireNextImageKHR(device, swapchain, std::numeric_limits<uint64_t>::max(), signalSemaphore, VK_NULL_HANDLE, &imageIndex);
+            return imageIndex;
+        }
+
         void cleanup(VkDevice& device){
             for (auto imageView : imageViews) {
                 vkDestroyImageView(device, imageView, nullptr);
             }
+            vkDestroySwapchainKHR(device, swapchain, nullptr);
         }
 
     private:

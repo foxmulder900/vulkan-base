@@ -51,6 +51,24 @@ void DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT
     }
 }
 
+VkSubmitInfo buildSubmitInfo(VkCommandBuffer& commandBuffers) {
+    VkSubmitInfo submitInfo = {};
+    submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+    submitInfo.commandBufferCount = 1;
+    submitInfo.pCommandBuffers = &commandBuffers;
+    return submitInfo;
+}
+
+VkPresentInfoKHR buildPresentInfo(VkSwapchainKHR& swapChain, uint32_t &imageIndex) {
+    VkPresentInfoKHR presentInfo = {};
+    presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+    presentInfo.swapchainCount = 1;
+    presentInfo.pSwapchains = &swapChain;
+    presentInfo.pImageIndices = &imageIndex;
+    presentInfo.pResults = nullptr; // Optional
+    return presentInfo;
+}
+
 
 class HelloTriangleApplication {
 public:
@@ -385,23 +403,16 @@ private:
 
         uint32_t imageIndex = swapChain.acquireNewImage(device, imageAvailableSemaphores[currentFrame]);
 
-        VkSubmitInfo submitInfo = {};
-        submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-        submitInfo.commandBufferCount = 1;
-        submitInfo.pCommandBuffers = &commandBuffers[imageIndex];
+        VkSubmitInfo submitInfo = buildSubmitInfo(commandBuffers[imageIndex]);
         queueManager.submitToGraphicsQueue(submitInfo, currentFrame, imageAvailableSemaphores);
 
-        VkPresentInfoKHR presentInfo = {};
-        presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
-        VkSwapchainKHR swapChains[] = {swapChain.getSwapChain()};
-        presentInfo.swapchainCount = 1;
-        presentInfo.pSwapchains = swapChains;
-        presentInfo.pImageIndices = &imageIndex;
-        presentInfo.pResults = nullptr; // Optional
+        VkPresentInfoKHR presentInfo = buildPresentInfo(swapChain.getSwapChain(), imageIndex);
         queueManager.submitToPresentQueue(presentInfo, currentFrame);
 
-        currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
+        incrementFrameCount();
     }
+
+    void incrementFrameCount() { currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT; }
 
     static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
             VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
